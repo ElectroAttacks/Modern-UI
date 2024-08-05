@@ -6,7 +6,9 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
-namespace ModernUI.Abstractions.Models;
+using ModernUI.Hosting.Contracts.Models;
+
+namespace ModernUI.Hosting.Models;
 
 /// <summary>
 ///     Represents a setting that notifies when its value changes and can be serialized.
@@ -15,7 +17,7 @@ namespace ModernUI.Abstractions.Models;
 ///     The type of value the setting holds.
 /// </typeparam>
 [Serializable]
-public record struct Setting<T> : INotifyPropertyChanging, INotifyPropertyChanged
+public record Setting<T> : INotifyPropertyChanging, INotifyPropertyChanged, ISetting
 {
 
     [AllowNull]
@@ -24,7 +26,6 @@ public record struct Setting<T> : INotifyPropertyChanging, INotifyPropertyChange
     /// <summary>
     ///     Gets or sets the value of the setting.
     /// </summary>
-    [MaybeNull]
     public T Value
     {
         get
@@ -36,10 +37,25 @@ public record struct Setting<T> : INotifyPropertyChanging, INotifyPropertyChange
             if (EqualityComparer<T>.Default.Equals(_value, value)) return;
 
             PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(nameof(Value)));
+
             _value = value;
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
         }
     }
+
+    /// <inheritdoc />
+    public bool IsRegistered { get; private set; } = true;
+
+    /// <inheritdoc />
+    bool ISetting.IsDefaultValue
+    {
+        get
+        {
+            return EqualityComparer<T>.Default.Equals(_value, default!);
+        }
+    }
+
 
     /// <inheritdoc />
     public event PropertyChangingEventHandler? PropertyChanging;
@@ -81,9 +97,11 @@ public record struct Setting<T> : INotifyPropertyChanging, INotifyPropertyChange
         action();
     }
 
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() => Value?.ToString() ?? string.Empty;
+
 
     /// <summary>
     ///     Implicitly converts a setting to its value.
@@ -94,4 +112,10 @@ public record struct Setting<T> : INotifyPropertyChanging, INotifyPropertyChange
     [return: MaybeNull]
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator T(Setting<T> setting) => setting.Value;
+
+
+    /// <summary>
+    ///     Gets a setting that is not registered in the cache.
+    /// </summary>
+    public static Setting<T> Unregistered => new() { IsRegistered = false };
 }
