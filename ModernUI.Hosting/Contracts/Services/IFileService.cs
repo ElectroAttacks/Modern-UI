@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,51 +12,124 @@ public interface IFileService
 {
 
     /// <summary>
-    ///     Asynchronously reads the JSON content of the file at the specified <paramref name="combinedPath"/> and deserializes it to the specified type <typeparamref name="T"/>.
+    ///     Gets the options to use for JSON serialization and deserialization.
     /// </summary>
-    /// <typeparam name="T">
-    ///     The type to which the JSON content should be deserialized.
-    /// </typeparam>
-    /// <param name="combinedPath">
-    ///     The combined path to the file (including it's name) to read.
-    /// </param>
-    /// <param name="useCompression">
-    ///     The value that determines whether the file should be decompressed before reading.
-    /// </param>
-    /// <param name="serializerOptions">
-    ///     The options to use when serializing and deserializing JSON.
-    /// </param>
-    /// <param name="cancellationToken">
-    ///     The token to monitor for cancellation requests.
-    /// </param>
-    /// <returns>
-    ///     A <typeparamref name="T"/> instance deserialized from the JSON content of the file.
-    /// </returns>
-    Task<T?> ReadJsonAsync<T>(string combinedPath, bool useCompression, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken = default);
+    JsonSerializerOptions JsonOptions { get; }
+
 
     /// <summary>
-    ///     Asynchronously writes the specified <paramref name="value"/> to the file at the specified <paramref name="combinedPath"/> as JSON content.
+    ///     Deletes the specified directory and, if indicated, any subdirectories and files in the directory.
+    /// </summary>
+    /// <param name="path">
+    ///     The path of the directory to remove.
+    /// </param>
+    /// <param name="recusive">
+    ///     A value indicating whether to remove subdirectories and files in the directory.
+    /// </param>
+    void DeleteDirectory(string path, bool recusive);
+
+
+    /// <summary>
+    ///     Deletes the specified file.
+    /// </summary>
+    /// <param name="path">
+    ///     The path to the file.
+    /// </param>
+    /// <param name="fileName">
+    ///     The name of the file to delete.
+    /// </param>
+    void DeleteFile(string path, string fileName);
+
+
+    /// <summary>
+    ///     Determines whether the specified directory exists.
+    /// </summary>
+    /// <param name="path">
+    ///     The path to the directory to check.
+    /// </param>
+    /// <returns>
+    ///     <see langword="true"/> if the directory exists; otherwise, <see langword="false"/>.
+    /// </returns>
+    bool DirectoryExists(string path);
+
+
+    /// <summary>
+    ///     Determines whether the specified file exists.
+    /// </summary>
+    /// <param name="path">
+    ///     The path to the file.
+    /// </param>
+    /// <param name="fileName">
+    ///     The name of the file to check.
+    /// </param>
+    /// <returns>
+    ///     <see langword="true"/> if the file exists; otherwise, <see langword="false"/>.
+    /// </returns>
+    bool FileExists(string path, string fileName);
+
+
+    /// <summary>
+    ///     Gets the last write time of the specified file.
+    /// </summary>
+    /// <param name="path">
+    ///     The path to the file.
+    /// </param>
+    /// <param name="fileName">
+    ///     The name of the file.
+    /// </param>
+    /// <returns>
+    ///     A <see cref="DateTime"/> instance representing the last write time of the file.
+    /// </returns>
+    DateTime GetLastWriteTime(string path, string fileName);
+
+
+    /// <summary>
+    ///     Reads a JSON file asynchronously and deserializes it to the specified type.
     /// </summary>
     /// <typeparam name="T">
-    ///     The type of the value to write.
+    ///     The type to deserialize the JSON data to.
     /// </typeparam>
-    /// <param name="combinedPath">
-    ///     The combined path to the file (including it's name) to write.
+    /// <param name="path">
+    ///     The path to the file.
     /// </param>
-    /// <param name="value">
-    ///     The value to write as JSON content to the file.
+    /// <param name="fileName">
+    ///     The name of the file to read.
     /// </param>
-    /// <param name="useCompression">
-    ///     The value that determines whether the file should be compressed before writing.
-    /// </param>
-    /// <param name="serializerOptions">
-    ///     The options to use when serializing and deserializing JSON.
+    /// <param name="jsonOptions">
+    ///     The options to use for JSON serialization and deserialization.
     /// </param>
     /// <param name="cancellationToken">
-    ///     The token to monitor for cancellation requests.
+    ///     A token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    ///     An <typeparamref name="T"/> instance representing the deserialized JSON data.
+    /// </returns>
+    Task<T?> ReadJsonAsync<T>(string path, string fileName, JsonSerializerOptions? jsonOptions = default, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    ///     Writes the specified data to a JSON file asynchronously.
+    /// </summary>
+    /// <typeparam name="T">
+    ///     The type of data to serialize to JSON.
+    /// </typeparam>
+    /// <param name="path">
+    ///     The path to the file.
+    /// </param>
+    /// <param name="fileName">
+    ///     The name of the file to write.
+    /// </param>
+    /// <param name="data">
+    ///     The <typeparamref name="T"/> instance to serialize to JSON.
+    /// </param>
+    /// <param name="jsonOptions">
+    ///     The options to use for JSON serialization and deserialization.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     A token to monitor for cancellation requests.
     /// </param>
     /// <returns>
     ///     A <see cref="Task"/> representing the asynchronous operation.
     /// </returns>
-    Task WriteJsonAsync<T>(string combinedPath, T value, bool useCompression, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken);
+    Task WriteJsonAsync<T>(string path, string fileName, T data, JsonSerializerOptions? jsonOptions = default, CancellationToken cancellationToken = default);
 }
