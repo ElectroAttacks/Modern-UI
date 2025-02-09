@@ -2,9 +2,11 @@
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using ModernUI.Hosting.Contracts.Services;
@@ -12,135 +14,198 @@ using ModernUI.Hosting.Contracts.Services;
 namespace ModernUI.Hosting.Services;
 
 /// <summary>
-///     Provides a service for file operations.
+///     Provides a service to work with files.
 /// </summary>
 public sealed class FileService : IFileService
 {
 
+    #region Fields & Properties
+
     private readonly ILogger _logger;
 
 
+    /// <inheritdoc/>
+    public JsonSerializerOptions JsonOptions
+    {
+        get;
+
+        private set;
+    }
+
+    #endregion
+
+
+    #region Constructors
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="FileService"/> class.
     /// </summary>
     /// <param name="logger">
-    ///     The logger to use for logging.
+    ///     The logger to use.
     /// </param>
-    public FileService(ILogger<FileService> logger)
+    /// <param name="configuration">
+    ///     The configuration settings to bind to the service.
+    /// </param>
+    /// <param name="setup">
+    ///     The optional setup to be performed.
+    /// </param>
+    public FileService(ILogger<FileService> logger, IConfiguration configuration, Action<FileService>? setup = default)
     {
         _logger = logger;
+
+        JsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DictionaryKeyPolicy = JsonNamingPolicy.SnakeCaseLower,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+        };
+
+        ConfigurationBinder.Bind(configuration.GetSection(nameof(FileService)), this);
+
+        setup?.Invoke(this);
     }
 
+    #endregion
 
 
-    /// <inheritdoc />
-    public async Task<T?> ReadJsonAsync<T>(string combinedPath, bool useCompression, JsonSerializerOptions options, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public void DeleteDirectory(string path, bool recusive)
     {
         try
         {
-            // Validate file path and compression settings
-            if (!IsPathValid(ref combinedPath, $".json{(useCompression ? ".gz" : "")}"))
-            {
-                _logger.LogWarning("The Service {ServiceName} could not validate the path {Path}.", nameof(FileService), combinedPath);
+            Directory.Delete(path, recusive);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{ServiceName} failed to delete the directory.", nameof(FileService));
+        }
+    }
 
-                return default;
+
+    /// <inheritdoc/>
+    public void DeleteFile(string path, string fileName)
+    {
+        try
+        {
+            File.Delete(Path.Combine(path, fileName));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{ServiceName} failed to delete the file.", nameof(FileService));
+        }
+    }
+
+
+    /// <inheritdoc/>
+    public bool DirectoryExists(string path)
+    {
+        try
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
             }
 
-            // Validate if the file exists
-            if (!File.Exists(combinedPath))
-            {
-                _logger.LogWarning("The Service {ServiceName} could not find the file {Path}.", nameof(FileService), combinedPath);
+            return Directory.Exists(path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{ServiceName} failed to check if the directory exists.", nameof(FileService));
 
-                return default;
+
+            return false;
+        }
+    }
+
+
+    /// <inheritdoc/>
+    public bool FileExists(string path, string fileName)
+    {
+        try
+        {
+            return File.Exists(Path.Combine(path, fileName));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{ServiceName} failed to check if the file exists.", nameof(FileService));
+
+            return false;
+        }
+    }
+
+
+    /// <inheritdoc/>
+    public DateTime GetLastWriteTime(string path, string fileName)
+    {
+        try
+        {
+            return File.GetLastWriteTime(Path.Combine(path, fileName));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{ServiceName} failed to get the last write time.", nameof(FileService));
+
+            return DateTime.MinValue;
+        }
+    }
+
+
+    /// <inheritdoc/>
+    public async Task<T?> ReadJsonAsync<T>(string path, string fileName, JsonSerializerOptions? jsonOptions = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using Stream fileStream = File.OpenRead(Path.Combine(path, fileName));
+            jsonOptions ??= JsonOptions;
+
+            if (fileName.EndsWith(".gz"))
+            {
+                await using GZipStream gzipStream = new(fileStream, CompressionMode.Decompress);
+
+                return await JsonSerializer.DeserializeAsync<T>(gzipStream, jsonOptions, cancellationToken)
+                    .ConfigureAwait(false);
             }
-
-            // Create a stream to read the file
-            Stream utf8Json = useCompression
-                ? new GZipStream(File.OpenRead(combinedPath), CompressionMode.Decompress)
-                : File.OpenRead(combinedPath);
-
-            // Deserialize the content of the file
-            await using (utf8Json.ConfigureAwait(false))
+            else
             {
-                return await JsonSerializer.DeserializeAsync<T>(utf8Json, options, cancellationToken)
+                return await JsonSerializer.DeserializeAsync<T>(fileStream, jsonOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "The Service {ServiceName} could not read the file {Path}.", nameof(FileService), combinedPath);
+            _logger.LogError(ex, "{ServiceName} failed to read the file.", nameof(FileService));
 
             return default;
         }
     }
 
 
-    /// <inheritdoc />
-    public async Task WriteJsonAsync<T>(string combinedPath, T value, bool useCompression, JsonSerializerOptions options, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async Task WriteJsonAsync<T>(string path, string fileName, T data, JsonSerializerOptions? jsonOptions = null, CancellationToken cancellationToken = default)
     {
         try
         {
-            // Validate file path and compression settings
-            if (!IsPathValid(ref combinedPath, $".json{(useCompression ? ".gz" : "")}"))
-            {
-                _logger.LogWarning("The Service {ServiceName} could not validate the path {Path}.", nameof(FileService), combinedPath);
+            await using Stream fileStream = File.Create(Path.Combine(path, fileName));
+            jsonOptions ??= JsonOptions;
 
-                return;
+            if (fileName.EndsWith(".gz"))
+            {
+                await using GZipStream gzipStream = new(fileStream, CompressionMode.Compress);
+
+                await JsonSerializer.SerializeAsync(gzipStream, data, jsonOptions, cancellationToken)
+                    .ConfigureAwait(false);
             }
-
-            // Create a stream to write the file
-            Stream utf8Json = useCompression
-                ? new GZipStream(File.Create(combinedPath), CompressionMode.Compress)
-                : File.Create(combinedPath);
-
-            // Serialize the object to a file
-            await using (utf8Json.ConfigureAwait(false))
+            else
             {
-                await JsonSerializer.SerializeAsync(utf8Json, value, options, cancellationToken)
+                await JsonSerializer.SerializeAsync(fileStream, data, jsonOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "The Service {ServiceName} could not write the file {Path}.", nameof(FileService), combinedPath);
+            _logger.LogError(ex, "{ServiceName} failed to write the file.", nameof(FileService));
         }
     }
 
-
-    /// <summary>
-    ///     Validates the specified <paramref name="combinedPath"/> and ensures the directory exists.
-    /// </summary>
-    /// <param name="combinedPath">
-    ///     The combined path to validate.
-    /// </param>
-    /// <param name="requiredExtension">
-    ///     The required extension of the file.
-    /// </param>
-    /// <returns>
-    ///     <see langword="true"/> if the path is valid; otherwise, <see langword="false"/>.
-    /// </returns>
-    private bool IsPathValid(ref string combinedPath, string requiredExtension)
-    {
-        string directory = Path.GetDirectoryName(combinedPath);
-        string currentExtension = Path.GetExtension(combinedPath);
-
-        // Ensure the file extension matches the required extension
-        if (!string.Equals(currentExtension, requiredExtension, StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogDebug("The file extension {Extension} does not match the required extension {RequiredExtension}.", currentExtension, requiredExtension);
-
-            combinedPath = Path.ChangeExtension(combinedPath, requiredExtension);
-        }
-
-        // Ensure the directory exists
-        if (!Directory.Exists(directory))
-        {
-            _logger.LogDebug("The directory {Directory} does not exist. Creating it now.", directory);
-
-            Directory.CreateDirectory(directory);
-        }
-
-        return Directory.Exists(directory);
-    }
 }
