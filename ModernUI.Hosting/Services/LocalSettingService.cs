@@ -36,6 +36,36 @@ public sealed class LocalSettingService : PersistAndRestoreService<LocalSettingS
 
 
     /// <inheritdoc/>
+    public LocalSetting<T> GetOrAdd<T>(string category, string key, T? initialValue = default)
+    {
+        WaitForCompletionAsync(_restoreCompletionSource, "restoring").Wait();
+
+        using IDisposable writeLock = _readerWriterLock.WriterLock();
+
+        ConvertToJsonName(ref category, ref key);
+
+        if (!_data.TryGetValue(category, out ConcurrentDictionary<string, object>? settings))
+        {
+            settings = new ConcurrentDictionary<string, object>();
+            _data[category] = settings;
+        }
+
+        if (!settings.TryGetValue(key, out object? setting) || setting is not LocalSetting<T>)
+        {
+            // When the JSON Serializer cannot create a type, it returns a JsonElement.
+            if (setting is JsonElement jsonElement)
+                setting = jsonElement.Deserialize<LocalSetting<T>>(_jsonOptions);
+
+            setting ??= new LocalSetting<T>(initialValue);
+
+            settings[key] = setting;
+        }
+
+        return (LocalSetting<T>)setting;
+    }
+
+
+    /// <inheritdoc/>
     public async Task<LocalSetting<T>> GetOrAddAsync<T>(string category, string key, T? initialValue = default, CancellationToken cancellationToken = default)
     {
         await WaitForCompletionAsync(_restoreCompletionSource, "restoring")
