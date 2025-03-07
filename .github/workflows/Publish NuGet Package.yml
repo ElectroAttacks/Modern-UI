@@ -3,7 +3,7 @@ name: Publish NuGet Package
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'  # Workflow wird nur bei Tags wie "v1.0.0" getriggert
 
 jobs:
   publish:
@@ -15,16 +15,27 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '9.0.x'  # Passe die SDK-Version an
+
+      - name: Extract Version from Tag
+        id: extract_version
+        shell: bash
+        run: |
+          # Extrahiere die Versionsnummer aus dem Tag, entferne das führende "v"
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Restore Dependencies
         run: dotnet restore
 
-      - name: Build
+      - name: Build Project
         run: dotnet build --configuration Release --no-restore
 
-      - name: Pack
-        run: dotnet pack --configuration Release --no-build --output nupkgs
+      - name: Pack NuGet Package
+        run: dotnet pack --configuration Release --no-build -p:PackageVersion=$VERSION -o ./nupkgs
 
-      - name: Push to NuGet
-        run: dotnet nuget push "nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      - name: Push NuGet Package
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
