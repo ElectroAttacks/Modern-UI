@@ -17,7 +17,7 @@ namespace ModernUI.Hosting.Wpf.Services;
 /// <summary>
 ///     Provides a service to manage the application theme and accent color.
 /// </summary>
-public sealed class ThemeServices : IThemeService
+public sealed class ThemeService : IThemeService
 {
 
     #region Fields & Properties
@@ -143,7 +143,7 @@ public sealed class ThemeServices : IThemeService
 
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ThemeServices"/> class.
+    ///     Initializes a new instance of the <see cref="ThemeService"/> class.
     /// </summary>
     /// <param name="logger">
     ///     The logger to use for logging.
@@ -151,17 +151,17 @@ public sealed class ThemeServices : IThemeService
     /// <param name="localSettingService">
     ///     The local setting service to use for persisting and restoring settings.
     /// </param>
-    public ThemeServices(ILogger<ThemeServices> logger, ILocalSettingService localSettingService)
+    public ThemeService(ILogger<ThemeService> logger, ILocalSettingService localSettingService)
     {
         _logger = logger;
 
-        localSettingService.GetOrAdd(nameof(ThemeServices), nameof(Theme), ApplicationTheme.SystemDefault)
+        localSettingService.GetOrAdd(nameof(ThemeService), nameof(Theme), ApplicationTheme.SystemDefault)
             .SubscribeAndExecute(value => Theme = value);
 
-        localSettingService.GetOrAdd(nameof(ThemeServices), nameof(AccentColor), SystemColors.AccentColor)
+        localSettingService.GetOrAdd(nameof(ThemeService), nameof(AccentColor), SystemColors.AccentColor)
             .SubscribeAndExecute(value => AccentColor = value);
 
-        localSettingService.GetOrAdd(nameof(ThemeServices), nameof(UseSystemAccent), true)
+        localSettingService.GetOrAdd(nameof(ThemeService), nameof(UseSystemAccent), true)
             .SubscribeAndExecute(value => UseSystemAccent = value);
 
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
@@ -187,7 +187,7 @@ public sealed class ThemeServices : IThemeService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{ServiceName}: An unexpected error occurred while loading the accent color.", nameof(ThemeServices));
+            _logger.LogError(ex, "{ServiceName}: An unexpected error occurred while loading the accent color.", nameof(ThemeService));
         }
     }
 
@@ -226,7 +226,7 @@ public sealed class ThemeServices : IThemeService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{ServiceName}: An unexpected error occurred while loading the theme.", nameof(ThemeServices));
+            _logger.LogError(ex, "{ServiceName}: An unexpected error occurred while loading the theme.", nameof(ThemeService));
         }
     }
 
@@ -252,7 +252,7 @@ public sealed class ThemeServices : IThemeService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{ServiceName}: An unexpected error occurred while reading the system theme.", nameof(ThemeServices));
+            _logger.LogError(ex, "{ServiceName}: An unexpected error occurred while reading the system theme.", nameof(ThemeService));
         }
 
         return ApplicationTheme.Light;
