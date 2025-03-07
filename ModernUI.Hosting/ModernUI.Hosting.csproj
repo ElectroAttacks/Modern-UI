@@ -16,8 +16,8 @@
 	
 	<!-- NuGet -->
 	<PackageId>Modern-UI.Hosting</PackageId>
-	<Version>1.0.1</Version>
-	<Authors>Caspar Weber</Authors>
+	<Version>1.0.2</Version>
+	<Authors>ElectroAttacks, mOlDaViA</Authors>
 	<Description>
 		The ModernUI.Hosting library provides essential services and infrastructure for hosting modern UI applications.
 		It includes configuration management, logging, and asynchronous utilities to streamline the development of
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<None Include="README.md" Pack="true" PackagePath="\"/>
+	<None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
