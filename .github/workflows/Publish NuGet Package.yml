@@ -1,4 +1,4 @@
-name: NuGet-Veröffentlichung
+name: Publish NuGet Package
 
 on:
   push:
@@ -10,31 +10,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Code auschecken
+      - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Notwendig für GitVersion
+          fetch-depth: 0 
 
-      - name: .NET SDK installieren
+      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x' # Passe deine .NET-Version an
+          dotnet-version: '9.0.x'
 
-      - name: GitVersion installieren
+      - name: Setup GitVersion
         uses: gittools/actions/gitversion/setup@v0
         with:
           versionSpec: '5.x'
 
-      - name: GitVersion ausführen
+      - name: Execute GitVersion
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
 
-      - name: Version in csproj setzen
-        run: dotnet build /p:Version=${{ steps.gitversion.outputs.semVer }}
+      - name: Restore Dependencies
+        run: dotnet restore
 
-      - name: NuGet-Paket erstellen
-        run: dotnet pack -c Release -o .
-        
+      - name: Build Project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pack NuGet Package
+        run: dotnet pack --configuration Release --no-build -p:PackageVersion=${{ steps.gitversion.outputs.semVer }} -o ./nupkgs
+
       - name: Push NuGet Package
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
