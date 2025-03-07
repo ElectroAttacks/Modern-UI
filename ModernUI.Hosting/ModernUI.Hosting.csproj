@@ -16,7 +16,7 @@
 	
 	<!-- NuGet -->
 	<PackageId>Modern-UI.Hosting</PackageId>
-	<Version>1.0.2</Version>
+	<Version>1.0.4</Version>
 	<Authors>ElectroAttacks, mOlDaViA</Authors>
 	<Description>
 		The ModernUI.Hosting library provides essential services and infrastructure for hosting modern UI applications.
