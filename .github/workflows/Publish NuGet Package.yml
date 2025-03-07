@@ -1,40 +1,40 @@
-name: Publish NuGet Package
+name: NuGet-Veröffentlichung
 
 on:
   push:
-    tags:
-      - 'v*'  # Workflow wird nur bei Tags wie "v1.0.0" getriggert
+    branches:
+      - main
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
 
-      - name: Setup .NET
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Notwendig für GitVersion
+
+      - name: .NET SDK installieren
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x'  # Passe die SDK-Version an
+          dotnet-version: '9.0.x' # Passe deine .NET-Version an
 
-      - name: Extract Version from Tag
-        id: extract_version
-        shell: bash
-        run: |
-          # Extrahiere die Versionsnummer aus dem Tag, entferne das führende "v"
-          VERSION="${GITHUB_REF#refs/tags/v}"
-          echo "Version: $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: GitVersion installieren
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
 
-      - name: Restore Dependencies
-        run: dotnet restore
+      - name: GitVersion ausführen
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0
 
-      - name: Build Project
-        run: dotnet build --configuration Release --no-restore
+      - name: Version in csproj setzen
+        run: dotnet build /p:Version=${{ steps.gitversion.outputs.semVer }}
 
-      - name: Pack NuGet Package
-        run: dotnet pack --configuration Release --no-build -p:PackageVersion=$VERSION -o ./nupkgs
-
+      - name: NuGet-Paket erstellen
+        run: dotnet pack -c Release -o .
+        
       - name: Push NuGet Package
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
