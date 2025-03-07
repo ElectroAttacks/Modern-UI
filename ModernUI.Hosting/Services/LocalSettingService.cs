@@ -5,9 +5,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-
 using ModernUI.Hosting.Contracts.Models;
 using ModernUI.Hosting.Contracts.Services;
 using ModernUI.Hosting.Models;
@@ -18,7 +15,7 @@ namespace ModernUI.Hosting.Services;
 /// <summary>
 ///     Provides a service to persist and restore settings.
 /// </summary>
-public sealed class LocalSettingService : PersistAndRestoreService<LocalSettingService, string, ConcurrentDictionary<string, object>>, ILocalSettingService
+public sealed class LocalSettingService : ReadOnlyPersistAndRestoreService<LocalSettingService, string, ConcurrentDictionary<string, object>>, ILocalSettingService
 {
 
     #region Constructors
@@ -27,8 +24,8 @@ public sealed class LocalSettingService : PersistAndRestoreService<LocalSettingS
     ///     Initializes a new instance of the <see cref="LocalSettingService"/> class.
     /// </summary>
     /// <inheritdoc/>
-    public LocalSettingService(ILogger<LocalSettingService> logger, IFileService fileService, IConfiguration configuration, Action<ReadOnlyPersistAndRestoreService<LocalSettingService, string, ConcurrentDictionary<string, object>>>? setup = null)
-        : base(logger, fileService, configuration, setup)
+    public LocalSettingService(IServiceProvider serviceProvider, Action<LocalSettingService>? setup = null)
+        : base(serviceProvider, setup)
     {
     }
 
@@ -94,20 +91,6 @@ public sealed class LocalSettingService : PersistAndRestoreService<LocalSettingS
         }
 
         return (LocalSetting<T>)setting;
-    }
-
-
-    /// <inheritdoc/>
-    public async Task<bool> RemoveAsync(string category, string key, CancellationToken cancellationToken = default)
-    {
-        await WaitForCompletionAsync(_restoreCompletionSource, "restoring")
-            .ConfigureAwait(false);
-
-        using IDisposable writeLock = await _readerWriterLock.WriterLockAsync(cancellationToken).ConfigureAwait(false);
-
-        ConvertToJsonName(ref category, ref key);
-
-        return _data.TryGetValue(category, out ConcurrentDictionary<string, object>? settings) && settings.TryRemove(key, out _);
     }
 
 
