@@ -39,6 +39,12 @@ jobs:
         run: dotnet pack --configuration Release --no-build -p:PackageVersion=${{ steps.gitversion.outputs.semVer }} -o ./nupkgs
 
       - name: Push NuGet Package
+        shell: pwsh
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        run: |
+          $files = Get-ChildItem -Path "./nupkgs" -Filter "*.nupkg"
+          foreach ($file in $files) {
+            Write-Host "Pushing package: $($file.FullName)"
+            dotnet nuget push $file.FullName --api-key $env:NUGET_API_KEY --source "https://api.nuget.org/v3/index.json"
+          }
