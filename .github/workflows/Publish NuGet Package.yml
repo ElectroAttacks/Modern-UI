@@ -46,5 +46,5 @@ jobs:
           $files = Get-ChildItem -Path "./nupkgs" -Filter "*.nupkg"
           foreach ($file in $files) {
             Write-Host "Pushing package: $($file.FullName)"
-            dotnet nuget push $file.FullName --api-key $env:NUGET_API_KEY --source "https://api.nuget.org/v3/index.json"
+            dotnet nuget push $file.FullName --api-key $env:GIT_API_KEY --source "github"
           }
