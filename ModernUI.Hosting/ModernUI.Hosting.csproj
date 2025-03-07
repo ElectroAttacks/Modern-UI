@@ -3,9 +3,7 @@
   <PropertyGroup>
 	<PackageId>Modern-UI.Hosting</PackageId>
 	<Description>
-		The ModernUI.Hosting library provides essential services and infrastructure for hosting modern UI applications.
-		It includes configuration management, logging, and asynchronous utilities to streamline the development of
-		robust and maintainable applications.
+		The ModernUI.Hosting library provides essential services and infrastructure for hosting modern UI applications. It includes configuration management, logging, and asynchronous utilities to streamline the development of robust and maintainable applications.
 	</Description>	
   </PropertyGroup>
 
