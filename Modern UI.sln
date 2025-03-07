@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModernUI.Hosting.Wpf", "..\..\..\source\Modern-UI\ModernUI.Hosting.Wpf\ModernUI.Hosting.Wpf.csproj", "{3598ED0C-6190-C8C0-2BD5-66D212B91044}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,6 +24,10 @@ Global
 		{5321AEA4-A85D-4E04-BC70-8195D0EFF1E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5321AEA4-A85D-4E04-BC70-8195D0EFF1E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5321AEA4-A85D-4E04-BC70-8195D0EFF1E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3598ED0C-6190-C8C0-2BD5-66D212B91044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3598ED0C-6190-C8C0-2BD5-66D212B91044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3598ED0C-6190-C8C0-2BD5-66D212B91044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3598ED0C-6190-C8C0-2BD5-66D212B91044}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
