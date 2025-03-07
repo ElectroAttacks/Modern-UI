@@ -20,7 +20,7 @@
 		
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
-		<PackageLicenseFile>..\LICENSE.txt</PackageLicenseFile>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageReadmeFile>..\README.md</PackageReadmeFile>
 	</PropertyGroup>
 	
@@ -33,6 +33,6 @@
 
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="..\" />
-		<None Include="..\LICENSE.txt" Pack="true" PackagePath="..\" />
+		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
 	</ItemGroup>
 </Project>
