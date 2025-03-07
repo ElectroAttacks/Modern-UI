@@ -4,6 +4,7 @@
     <TargetFramework>net9.0-windows</TargetFramework>
 	<UseWPF>true</UseWPF>
 	
+	<PackageId>Modern-UI.Hosting.Wpf</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
