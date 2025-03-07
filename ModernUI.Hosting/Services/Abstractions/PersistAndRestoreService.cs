@@ -2,10 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-
-using ModernUI.Hosting.Contracts.Services;
 using ModernUI.Hosting.Contracts.Services.Abstractions;
 
 namespace ModernUI.Hosting.Services.Abstractions;
@@ -31,8 +27,8 @@ public abstract class PersistAndRestoreService<TSelf, TKey, TValue> : ReadOnlyPe
     ///     Initializes a new instance of the <see cref="PersistAndRestoreService{TSelf, TKey, TValue}"/> class.
     /// </summary>
     /// <inheritdoc/>
-    protected PersistAndRestoreService(ILogger<TSelf> logger, IFileService fileService, IConfiguration configuration, Action<ReadOnlyPersistAndRestoreService<TSelf, TKey, TValue>>? setup = null)
-        : base(logger, fileService, configuration, setup)
+    protected PersistAndRestoreService(IServiceProvider serviceProvider, Action<TSelf>? setup = null)
+        : base(serviceProvider, setup)
     {
     }
 

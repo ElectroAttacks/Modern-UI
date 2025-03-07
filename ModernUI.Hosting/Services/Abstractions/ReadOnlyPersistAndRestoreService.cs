@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using ModernUI.Hosting.Contracts.Services;
@@ -187,19 +188,13 @@ public abstract class ReadOnlyPersistAndRestoreService<TSelf, TKey, TValue> : IR
     /// <summary>
     ///     Initializes a new instance of the <see cref="ReadOnlyPersistAndRestoreService{TSelf, TKey, TValue}"/> class.
     /// </summary>
-    /// <param name="logger">
-    ///     The logger to be used.
-    /// </param>
-    /// <param name="fileService">
-    ///     The file service to be used.
-    /// </param>
-    /// <param name="configuration">
-    ///     The configuration settings to bind to the service.
+    /// <param name="serviceProvider">
+    ///     The service provider to be used.
     /// </param>
     /// <param name="setup">
     ///     The optional setup to be performed.
     /// </param>
-    protected ReadOnlyPersistAndRestoreService(ILogger<TSelf> logger, IFileService fileService, IConfiguration configuration, Action<ReadOnlyPersistAndRestoreService<TSelf, TKey, TValue>>? setup = default)
+    protected ReadOnlyPersistAndRestoreService(IServiceProvider serviceProvider, Action<TSelf>? setup = default)
     {
         _data = new ConcurrentDictionary<TKey, TValue>();
         _readerWriterLock = new AsyncReaderWriterLock();
@@ -210,15 +205,16 @@ public abstract class ReadOnlyPersistAndRestoreService<TSelf, TKey, TValue> : IR
             PropertyNamingPolicy = JsonNamingPolicy.KebabCaseLower,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
         };
-        _fileService = fileService;
-        _logger = logger;
+        _fileService = serviceProvider.GetRequiredService<IFileService>();
+        _logger = serviceProvider.GetRequiredService<ILogger<TSelf>>();
 
         DatabasePath = Path.Combine(Directory.GetCurrentDirectory(), "data");
         DatabaseFileName = $"{typeof(TSelf).Name}.json";
 
-        ConfigurationBinder.Bind(configuration.GetSection(typeof(TSelf).Name), this);
+        ConfigurationBinder.Bind(serviceProvider.GetRequiredService<IConfiguration>()
+            .GetSection(typeof(TSelf).Name), this);
 
-        setup?.Invoke(this);
+        setup?.Invoke((TSelf)this);
     }
 
     #endregion

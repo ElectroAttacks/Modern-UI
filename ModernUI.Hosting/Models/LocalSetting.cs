@@ -120,7 +120,6 @@ public sealed class LocalSetting<T> : INotifyPropertyChanging, INotifyPropertyCh
     /// <param name="setting">
     ///     The setting to retrieve the value from.
     /// </param>
-    [return: MaybeNull]
     public static implicit operator T(LocalSetting<T> setting) => setting.Value;
 
 }
