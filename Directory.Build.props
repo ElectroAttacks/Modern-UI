@@ -16,6 +16,7 @@
 		<Authors>ElectroAttacks, mOlDaViA</Authors>
 		<Copyright>Copyright (c) 2024 ElectroAttacks, mOlDaViA</Copyright>
 
+		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/ElectroAttacks/Modern-UI</RepositoryUrl>
 		
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
