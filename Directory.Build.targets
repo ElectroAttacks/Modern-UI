@@ -5,4 +5,9 @@
               DestinationFiles="$(ProjectDir)LICENSE.txt"
               SkipUnchangedFiles="true" />
 	</Target>
+	<Target Name="CopyReadmeFile" BeforeTargets="Build">
+		<Copy SourceFiles="$(MSBuildProjectDirectory)\..\README.md"
+              DestinationFiles="$(ProjectDir)README.md"
+              SkipUnchangedFiles="true" />
+	</Target>
 </Project>
