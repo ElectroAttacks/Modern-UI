@@ -2,23 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
-	<LangVersion>Preview</LangVersion>
 	<UseWPF>true</UseWPF>
-	  
-	<ImplicitUsings>disable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-
-	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-	  <SignAssembly>True</SignAssembly>
-
-	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-
-	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-
-	  <!-- License -->
-	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <Copyright>Copyright (c) 2024 ElectroAttacks, mOlDaViA</Copyright>
+	
   </PropertyGroup>
 
   <ItemGroup>
