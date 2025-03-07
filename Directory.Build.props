@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+	<!-- Target Framework & Code Style -->
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<LangVersion>Preview</LangVersion>
+
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	</PropertyGroup>
+	
+	<!-- NuGet -->
+	<PropertyGroup>
+		<Authors>ElectroAttacks, mOlDaViA</Authors>
+		<Copyright>Copyright (c) 2024 ElectroAttacks, mOlDaViA</Copyright>
+
+		<RepositoryUrl>https://github.com/ElectroAttacks/Modern-UI</RepositoryUrl>
+		
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+		<PackageLicenseFile>..\LICENSE.txt</PackageLicenseFile>
+		<PackageReadmeFile>..\README.md</PackageReadmeFile>
+	</PropertyGroup>
+	
+	
+	<!-- Other -->
+	<PropertyGroup>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>	
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="..\" />
+		<None Include="..\LICENSE.txt" Pack="true" PackagePath="..\" />
+	</ItemGroup>
+</Project>
